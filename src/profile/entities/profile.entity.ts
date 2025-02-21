@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from 'uuid';
+
 export class Profile {
   id: string;
   code: string;
@@ -6,6 +8,6 @@ export class Profile {
 
   constructor(partial: Partial<Profile>) {
     Object.assign(this, partial);
-    this.id = crypto.randomUUID();
+    this.id = uuidv4();
   }
 }

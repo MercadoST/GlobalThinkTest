@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import { Profile } from '../../profile/entities/profile.entity';
 
 export enum UserRole {
@@ -16,7 +17,7 @@ export class User {
 
   constructor(partial: Partial<User>) {
     Object.assign(this, partial);
-    this.id = crypto.randomUUID();
+    this.id = uuidv4();
     this.role = partial.role || UserRole.USER;
   }
 }
