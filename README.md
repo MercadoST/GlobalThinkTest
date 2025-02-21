@@ -34,6 +34,25 @@ npm install
 cp .env.example .env
 ```
 
+## Configuración del Entorno
+
+1. Copia el archivo de ejemplo de variables de entorno:
+```bash
+cp .env.example .env
+```
+
+2. Edita el archivo `.env` con tus configuraciones:
+- `JWT_SECRET`: Clave secreta para firmar los tokens JWT
+- `JWT_EXPIRATION_TIME`: Tiempo de expiración de los tokens (ej: 1d, 12h)
+- `PORT`: Puerto donde se ejecutará la aplicación
+- `NODE_ENV`: Entorno de ejecución (development/production)
+
+3. Variables de entorno requeridas:
+```env
+JWT_SECRET=your-secret-key-here
+JWT_EXPIRATION_TIME=1d
+```
+
 ## Ejecución
 
 ### Desarrollo Local
