@@ -46,10 +46,16 @@ export class AuthController {
   @ApiBody({
     type: LoginDto,
     examples: {
-      ejemplo1: {
+      ejemploUsuario: {
         value: {
           email: 'usuario@ejemplo.com',
           password: 'Contraseña123!',
+        },
+      },
+      ejemploAdmin: {
+        value: {
+          email: 'admin@example.com',
+          password: 'admin123',
         },
       },
     },

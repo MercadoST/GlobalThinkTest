@@ -41,35 +41,36 @@ describe('UserService', () => {
   });
 
   describe('create', () => {
-    it('should create a user successfully', () => {
+    it('should create a user successfully', async () => {
       const createUserDto: CreateUserDto = mockUser;
-      const result = service.create(createUserDto);
+      const result = await service.create(createUserDto);
 
-      expect(result).toBeDefined();
       expect(result.email).toBe(mockUser.email);
       expect(result.profile).toBeDefined();
       expect(result.profile?.profileName).toBe(mockUser.profile.profileName);
     });
 
-    it('should throw BadRequestException if email already exists', () => {
+    it('should throw BadRequestException if email already exists', async () => {
       const createUserDto: CreateUserDto = mockUser;
-      service.create(createUserDto);
+      await service.create(createUserDto);
 
-      expect(() => service.create(createUserDto)).toThrow(BadRequestException);
+      await expect(service.create(createUserDto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
   describe('findAll', () => {
-    it('should return all users', () => {
-      service.create(mockUser);
+    it('should return all users', async () => {
+      await service.create(mockUser);
       const result = service.findAll();
 
       expect(result).toBeInstanceOf(Array);
       expect(result.length).toBeGreaterThan(0);
     });
 
-    it('should filter users by name', () => {
-      service.create(mockUser);
+    it('should filter users by name', async () => {
+      await service.create(mockUser);
       const result = service.findAll('Test');
 
       expect(result).toBeInstanceOf(Array);
@@ -78,11 +79,10 @@ describe('UserService', () => {
   });
 
   describe('findOne', () => {
-    it('should return a user by id', () => {
-      const created = service.create(mockUser);
+    it('should return a user by id', async () => {
+      const created = await service.create(mockUser);
       const result = service.findOne(created.id);
 
-      expect(result).toBeDefined();
       expect(result.id).toBe(created.id);
     });
 
@@ -94,8 +94,8 @@ describe('UserService', () => {
   });
 
   describe('update', () => {
-    it('should update a user successfully', () => {
-      const created = service.create({
+    it('should update a user successfully', async () => {
+      const created = await service.create({
         ...mockUser,
         email: 'different@example.com',
       });
@@ -114,8 +114,8 @@ describe('UserService', () => {
   });
 
   describe('delete', () => {
-    it('should delete a user successfully', () => {
-      const created = service.create(mockUser);
+    it('should delete a user successfully', async () => {
+      const created = await service.create(mockUser);
       service.delete(created.id);
 
       expect(() => service.findOne(created.id)).toThrow(NotFoundException);

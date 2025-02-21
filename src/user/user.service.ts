@@ -4,70 +4,102 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { User } from './entities/user.entity';
+import { User, UserRole } from './entities/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ProfileService } from 'src/profile/profile.service';
+import { hash } from 'bcrypt';
+
+type UserWithoutPassword = Omit<User, 'password'>;
 
 @Injectable()
 export class UserService {
   private users: Map<string, User> = new Map();
 
-  constructor(private readonly profileService: ProfileService) {}
+  constructor(private readonly profileService: ProfileService) {
+    // Inicializar usuario admin
+    void this.initializeAdmin();
+  }
 
-  create(createUserDto: CreateUserDto): User {
-    // Validar que el email no exista
+  private async initializeAdmin() {
+    const adminProfile = this.profileService.create({
+      profileName: 'Admin Profile',
+      code: 'ADMIN001',
+    });
+
+    const hashedPassword = await hash('admin123', 10);
+
+    const adminUser = new User({
+      email: 'admin@example.com',
+      name: 'Administrator',
+      age: 30,
+      password: hashedPassword,
+      role: UserRole.ADMIN,
+      profile: adminProfile,
+    });
+
+    this.users.set(adminUser.id, adminUser);
+  }
+
+  private excludePassword(user: User): UserWithoutPassword {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...userWithoutPassword } = user;
+    return userWithoutPassword;
+  }
+
+  async create(createUserDto: CreateUserDto): Promise<UserWithoutPassword> {
     const existingUser = Array.from(this.users.values()).find(
       (user) => user.email === createUserDto.email,
     );
+
     if (existingUser) {
       throw new BadRequestException('Email already exists');
     }
 
-    const { profile, ...userData } = createUserDto;
-
-    if (!profile) {
-      throw new BadRequestException('Profile is required');
-    }
-
     try {
-      const newProfile = this.profileService.create(profile);
+      const hashedPassword = await hash(createUserDto.password, 10);
+      const { profile: profileDto, ...userData } = createUserDto;
+
+      const newProfile = this.profileService.create(profileDto);
+
       const user = new User({
         ...userData,
+        password: hashedPassword,
         profile: newProfile,
       });
 
       this.users.set(user.id, user);
-      return user;
+      return this.excludePassword(user);
     } catch (error) {
       throw new InternalServerErrorException(
-        `Error creating user or profile: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Error creating user: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
   }
 
-  findAll(filter?: string): User[] {
-    const allUsers = Array.from(this.users.values());
-
-    if (!filter) {
-      return allUsers;
-    }
-
-    const filterLower = filter.toLowerCase();
-    return allUsers.filter(
-      (user) =>
-        user.name.toLowerCase().includes(filterLower) ||
-        user.email.toLowerCase().includes(filterLower) ||
-        user.profile?.profileName.toLowerCase().includes(filterLower),
-    );
+  findAll(filter?: string): UserWithoutPassword[] {
+    const users = Array.from(this.users.values());
+    const filteredUsers = filter
+      ? users.filter(
+          (user) =>
+            user.name.toLowerCase().includes(filter.toLowerCase()) ||
+            user.email.toLowerCase().includes(filter.toLowerCase()),
+        )
+      : users;
+    return filteredUsers.map((user) => this.excludePassword(user));
   }
 
-  findOne(id: string): User {
+  findOne(id: string): UserWithoutPassword {
     const user = this.users.get(id);
-    if (!user) throw new NotFoundException('User not found');
-    return user;
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return this.excludePassword(user);
   }
 
-  update(id: string, updateUserDto: Partial<CreateUserDto>): User {
+  update(
+    id: string,
+    updateUserDto: Partial<CreateUserDto>,
+  ): UserWithoutPassword {
     const user = this.findOne(id);
     const { profile: profileDto, email, ...restUpdateDto } = updateUserDto;
 
@@ -92,7 +124,7 @@ export class UserService {
       });
 
       this.users.set(id, updatedUser);
-      return updatedUser;
+      return this.excludePassword(updatedUser);
     } catch (error) {
       throw new InternalServerErrorException(
         `Error updating user: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -108,9 +140,6 @@ export class UserService {
   }
 
   findByEmail(email: string): User | undefined {
-    const user = Array.from(this.users.values()).find(
-      (user) => user.email === email,
-    );
-    return user;
+    return Array.from(this.users.values()).find((user) => user.email === email);
   }
 }

@@ -32,7 +32,7 @@ export class AuthService {
       }
 
       return user;
-    } catch (error: unknown) {
+    } catch (error) {
       if (error instanceof UnauthorizedException) {
         throw error;
       }
