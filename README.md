@@ -45,7 +45,6 @@ cp .env.example .env
 - `JWT_SECRET`: Clave secreta para firmar los tokens JWT
 - `JWT_EXPIRATION_TIME`: Tiempo de expiración de los tokens (ej: 1d, 12h)
 - `PORT`: Puerto donde se ejecutará la aplicación
-- `NODE_ENV`: Entorno de ejecución (development/production)
 
 3. Variables de entorno requeridas:
 ```env
