@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { Profile } from './entities/profile.entity';
 import { CreateProfileDto } from './dto/create-profile.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class ProfileService {
@@ -37,10 +38,13 @@ export class ProfileService {
     return profile;
   }
 
-  update(id: string, updateProfileDto: Partial<CreateProfileDto>): Profile {
+  update(id: string, updateProfileDto: UpdateProfileDto) {
+    const profile = this.profiles.get(id);
+    if (!profile) {
+      throw new NotFoundException('Profile not found');
+    }
+
     try {
-      const profile = this.findOne(id);
-      if (!profile) throw new NotFoundException('Profile not found');
       const updatedProfile = new Profile({
         ...profile,
         ...updateProfileDto,
