@@ -17,9 +17,10 @@ async function bootstrap() {
   );
 
   const config = new DocumentBuilder()
-    .setTitle('Users API')
-    .setDescription('The Users API description')
+    .setTitle('API Documentation')
+    .setDescription('Documentación de la API')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config, {
     extraModels: [

@@ -9,6 +9,14 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiQuery,
+  ApiParam,
+  ApiBody,
+} from '@nestjs/swagger';
 import { ProfileService } from './profile.service';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
@@ -17,32 +25,72 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 import { UserRole } from 'src/user/entities/user.entity';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
+@ApiTags('Perfiles')
 @Controller('profile')
-@UseGuards(JwtAuthGuard)
-@UseGuards(RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
   @Post()
   @Roles(UserRole.ADMIN, UserRole.USER)
+  @ApiOperation({ summary: 'Crear nuevo perfil' })
+  @ApiBody({
+    type: CreateProfileDto,
+    examples: {
+      ejemplo1: {
+        value: {
+          profileName: 'Perfil Profesional',
+          code: 'PROF003',
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 201, description: 'Perfil creado exitosamente' })
+  @ApiResponse({ status: 400, description: 'Datos inválidos' })
   create(@Body() createProfileDto: CreateProfileDto) {
     return this.profileService.create(createProfileDto);
   }
 
   @Get()
   @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Obtener todos los perfiles' })
+  @ApiQuery({
+    name: 'filter',
+    required: false,
+    description: 'Filtrar por nombre o código',
+  })
+  @ApiResponse({ status: 200, description: 'Lista de perfiles' })
   findAll(@Query('filter') filter?: string) {
     return this.profileService.findAll(filter);
   }
 
   @Get(':id')
   @Roles(UserRole.ADMIN, UserRole.USER)
+  @ApiOperation({ summary: 'Obtener perfil por ID' })
+  @ApiParam({ name: 'id', description: 'ID del perfil' })
+  @ApiResponse({ status: 200, description: 'Perfil encontrado' })
+  @ApiResponse({ status: 404, description: 'Perfil no encontrado' })
   findOne(@Param('id', ParseUUIDPipe) id: string) {
     return this.profileService.findOne(id);
   }
 
   @Patch(':id')
   @Roles(UserRole.ADMIN, UserRole.USER)
+  @ApiOperation({ summary: 'Actualizar perfil' })
+  @ApiParam({ name: 'id', description: 'ID del perfil' })
+  @ApiBody({
+    type: UpdateProfileDto,
+    examples: {
+      ejemplo1: {
+        value: {
+          profileName: 'Perfil Actualizado',
+          code: 'PROF004',
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Perfil actualizado' })
+  @ApiResponse({ status: 404, description: 'Perfil no encontrado' })
   update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateProfileDto: UpdateProfileDto,
