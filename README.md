@@ -44,12 +44,14 @@ cp .env.example .env
 2. Edita el archivo `.env` con tus configuraciones:
 - `JWT_SECRET`: Clave secreta para firmar los tokens JWT
 - `JWT_EXPIRATION_TIME`: Tiempo de expiración de los tokens (ej: 1d, 12h)
-- `PORT`: Puerto donde se ejecutará la aplicación
+- `PORT`: Puerto donde se ejecutará la aplicación (por defecto: 3000)
+- `NODE_ENV`: Entorno de ejecución (development/production)
 
 3. Variables de entorno requeridas:
 ```env
 JWT_SECRET=your-secret-key-here
 JWT_EXPIRATION_TIME=1d
+NODE_ENV=development  # Usar 'development' para tener acceso a Swagger
 ```
 
 ## Ejecución
@@ -81,9 +83,15 @@ npm run test
 npm run test:cov
 ```
 
-## Documentación API
-La documentación de la API está disponible a través de Swagger UI:
-- Local: http://localhost:3000/docs
+## Documentación API (Swagger)
+
+La documentación de la API está disponible a través de Swagger UI cuando el entorno está configurado en modo desarrollo:
+
+1. Asegúrate de que `NODE_ENV=development` en tu archivo `.env`
+2. Inicia la aplicación
+3. Accede a la documentación en: http://localhost:3000/docs
+
+> **Nota**: La documentación de Swagger solo está disponible en el entorno de desarrollo por razones de seguridad.
 
 ### Endpoints Principales
 
